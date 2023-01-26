@@ -1,28 +1,25 @@
 DHT22 Python library
-This simple class can be used for reading temperature and humidity values from DHT22 sensor on Orange PI.
+This simple class can be used for reading temperature and humidity values from DHT22 sensor on Orange PI 3 LTS. Using library https://github.com/koguja/OrangePi.GPIO
 
 # Usage
 
 Example:
 ```python
-from pyA20.gpio import gpio
-from pyA20.gpio import port
- 
-#import RPi.GPIO as GPIO
+import OPi.GPIO as GPIO
+
+GPIO.setboard(GPIO.THREE)
+GPIO.setmode(GPIO.BOARD)
+
 import dht22
 import time
 import datetime
  
 # initialize GPIO
-#gpio.setwarnings(False)
-#gpio.setmode(GPIO.BCM)
-PIN2 = port.PA6
-gpio.init()
-#gpio.cleanup()
- 
+
+PIN22 = 16
  
 # read data using pin 14
-instance = dht22.DHT22(pin=PIN2)
+instance = dht22.DHT22(pin=PIN22)
  
 while True:
     result = instance.read()
