@@ -1,21 +1,13 @@
-from pyA20.gpio import gpio
-from pyA20.gpio import port
+import OPi.GPIO as GPIO
+from time import sleep
 
-#import RPi.GPIO as GPIO
 import dht22
 import time
 import datetime
 
-# initialize GPIO
-#gpio.setwarnings(False)
-#gpio.setmode(GPIO.BCM)
-PIN2 = port.PA6
-gpio.init()
-#gpio.cleanup()
+PIN22 = 16
 
-
-# read data using pin 14
-instance = dht22.DHT22(pin=PIN2)
+instance = dht22.DHT22(pin=PIN22)
 
 while True:
     result = instance.read()
