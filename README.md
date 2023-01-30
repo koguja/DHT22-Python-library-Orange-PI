@@ -18,7 +18,7 @@ import datetime
 
 PIN22 = 16
  
-# read data using pin 14
+# read data using pin 16
 instance = dht22.DHT22(pin=PIN22)
  
 while True:
