@@ -1,8 +1,9 @@
 import time
-from pyA20.gpio import gpio
-from pyA20.gpio import port
-#import RPi
 
+import OPi.GPIO as GPIO
+
+GPIO.setboard(GPIO.THREE)
+GPIO.setmode(GPIO.BOARD)
 
 class DHT22Result:
     'DHT22 sensor result returned by DHT22.read() method'
@@ -23,9 +24,8 @@ class DHT22Result:
     def is_valid(self):
         return self.error_code == DHT22Result.ERR_NO_ERROR
 
-
 class DHT22:
-    'DHT22 sensor reader class for Raspberry'
+    'DHT22 sensor reader class for OrangePi 3 LTS'
 
     __pin = 0
 
@@ -33,19 +33,16 @@ class DHT22:
         self.__pin = pin
 
     def read(self):
-        gpio.setcfg(self.__pin, gpio.OUTPUT)
+        GPIO.setup(self.__pin, GPIO.OUT)
 
         # send initial high
-        self.__send_and_sleep(gpio.HIGH, 0.05)
+        self.__send_and_sleep(1, 0.05)
 
         # pull down to low
-        self.__send_and_sleep(gpio.LOW, 0.02)
+        self.__send_and_sleep(0, 0.02)
 
         # change to input using pull up
-        #gpio.setcfg(self.__pin, gpio.INPUT, gpio.PULLUP)
-	gpio.setcfg(self.__pin, gpio.INPUT)
-	gpio.pullup(self.__pin, gpio.PULLUP)
-
+        GPIO.setup(self.__pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
         # collect data into an array
         data = self.__collect_input()
@@ -73,9 +70,8 @@ class DHT22:
 			   (((the_bytes[2] & 0x7F)<<8)+the_bytes[3])/10.00,
 			   ((the_bytes[0]<<8)+the_bytes[1])/10.00)
 
-
     def __send_and_sleep(self, output, sleep):
-        gpio.output(self.__pin, output)
+        GPIO.output(self.__pin, output)
         time.sleep(sleep)
 
     def __collect_input(self):
@@ -83,12 +79,13 @@ class DHT22:
         unchanged_count = 0
 
         # this is used to determine where is the end of the data
+
         max_unchanged_count = 100
 
         last = -1
         data = []
         while True:
-            current = gpio.input(self.__pin)
+            current = GPIO.input(self.__pin)
             data.append(current)
             if last != current:
                 unchanged_count = 0
@@ -118,28 +115,28 @@ class DHT22:
             current_length += 1
 
             if state == STATE_INIT_PULL_DOWN:
-                if current == gpio.LOW:
+                if current == 0:
                     # ok, we got the initial pull down
                     state = STATE_INIT_PULL_UP
                     continue
                 else:
                     continue
             if state == STATE_INIT_PULL_UP:
-                if current == gpio.HIGH:
+                if current == 1:
                     # ok, we got the initial pull up
                     state = STATE_DATA_FIRST_PULL_DOWN
                     continue
                 else:
                     continue
             if state == STATE_DATA_FIRST_PULL_DOWN:
-                if current == gpio.LOW:
+                if current == 0:
                     # we have the initial pull down, the next will be the data pull up
                     state = STATE_DATA_PULL_UP
                     continue
                 else:
                     continue
             if state == STATE_DATA_PULL_UP:
-                if current == gpio.HIGH:
+                if current == 1:
                     # data pulled up, the length of this pull up will determine whether it is 0 or 1
                     current_length = 0
                     state = STATE_DATA_PULL_DOWN
@@ -147,7 +144,7 @@ class DHT22:
                 else:
                     continue
             if state == STATE_DATA_PULL_DOWN:
-                if current == gpio.LOW:
+                if current == 0:
                     # pulled down, we store the length of the previous pull up period
                     lengths.append(current_length)
                     state = STATE_DATA_PULL_UP
